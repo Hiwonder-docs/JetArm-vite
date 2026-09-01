@@ -1,5 +1,5 @@
 import { _ as _export_sfc, o as openBlock, c as createElementBlock, j as createBaseVNode } from "./chunks/framework.sdIqiAaL.js";
-const __pageData = JSON.parse('{"title":"","description":"","frontmatter":{"layout":"page-redirect","redirectTo":"/page/1.Getting_Ready.html"},"headers":[],"relativePath":"docs/index.md","filePath":"docs/index.md"}');
+const __pageData = JSON.parse('{"title":"","description":"","frontmatter":{"layout":"page-redirect","redirectTo":"/docs/1.Getting_Ready.html"},"headers":[],"relativePath":"docs/index.md","filePath":"docs/index.md"}');
 const _sfc_main = { name: "docs/index.md" };
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return openBlock(), createElementBlock("div", null, [..._cache[0] || (_cache[0] = [

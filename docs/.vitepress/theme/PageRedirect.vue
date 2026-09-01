@@ -7,7 +7,7 @@ const { frontmatter } = useData()
 const redirectTarget = computed(() => {
   const rawTarget = String(frontmatter.value.redirectTo || '').trim()
   if (!rawTarget) {
-    return withBase('/page/')
+    return withBase('/docs/')
   }
 
   return rawTarget.startsWith('/')

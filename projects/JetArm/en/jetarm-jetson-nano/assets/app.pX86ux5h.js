@@ -1,4 +1,4 @@
-import { R as RawTheme } from "./chunks/theme.Bqu45I0l.js";
+import { R as RawTheme } from "./chunks/theme.BM4EOdaI.js";
 import { R as inBrowser, a4 as useUpdateHead, a5 as RouterSymbol, a6 as initData, a7 as dataSymbol, a8 as Content, a9 as ClientOnly, aa as siteDataRef, ab as createRouter, ac as pathToFile, ad as createSSRApp, d as defineComponent, u as useData, v as onMounted, s as watchEffect, ae as usePrefetch, af as useCopyCode, ag as useCodeGroups, a3 as h } from "./chunks/framework.sdIqiAaL.js";
 function resolveThemeExtends(theme) {
   if (theme.extends) {

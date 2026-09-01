@@ -3102,7 +3102,7 @@ const _sfc_main$v = /* @__PURE__ */ defineComponent({
   __name: "VPNavBarSearch",
   __ssrInlineRender: true,
   setup(__props) {
-    const VPLocalSearchBox = defineAsyncComponent(() => import("./VPLocalSearchBox.CZ_ANyT3.js"));
+    const VPLocalSearchBox = defineAsyncComponent(() => import("./VPLocalSearchBox.FDVPH6pG.js"));
     const VPAlgoliaSearchBox = () => null;
     const { theme: theme2 } = useData();
     const loaded = ref(false);
@@ -4839,7 +4839,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     const redirectTarget = computed(() => {
       const rawTarget = String(frontmatter.value.redirectTo || "").trim();
       if (!rawTarget) {
-        return withBase("/page/");
+        return withBase("/docs/");
       }
       return rawTarget.startsWith("/") ? withBase(rawTarget) : withBase(`/${rawTarget}`);
     });
