@@ -4,7 +4,7 @@ import path from 'node:path'
 import { getSidebar } from './autoSidebar.mts'
 import mathjax3 from 'markdown-it-mathjax3'
 
-const problematicStrongEndingPattern = /[：；，。！？、（）【】《》「」『』“”‘’…]$/u
+const problematicStrongEndingPattern = /[：；，。！？、（）【】《》「」『』“”‘’]$/u
 const problematicStrongOpeningPattern = /^[（(][^*\n]+?[）)]$/u
 const strongWhitespacePattern = /\*\*([^*\n]+)\*\*/g
 const inlineCodePattern = /(`+[^`]*`+)/g
@@ -12,8 +12,7 @@ const fencePattern = /^\s*(```+|~~~+)/
 const lazyImagePlaceholder =
   'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%229%22 viewBox=%220 0 16 9%22%3E%3C/svg%3E'
 const imageDimensionCache = new Map<string, { width: number; height: number } | null>()
-const docsBase = normalizeBase(process.env.DOCS_BASE || '/projects/JetArm/en/jetarm-jetson-nano/')
-const currentVersion = process.env.DOCS_VERSION || 'jetarm-jetson-nano'
+const docsBase = normalizeBase(process.env.DOCS_BASE || '/projects/JetArm/en/jetarm-orin-nano/')
 
 function normalizeBase(value: string) {
   return `/${value.replace(/^\/+|\/+$/g, '')}/`
@@ -133,45 +132,76 @@ function trimWhitespaceInsideStrong(code: string) {
     .join('\n')
 }
 
-function normalizeImagePathSlashes() {
-  const mdImagePattern = /!\[([^\]]*)\]\(([^)]+)\)/g
-  const htmlImagePattern = /(<img\b[^>]*\bsrc=")([^"]+)("[^>]*\/?>)/gi
-  const htmlLinkPattern = /(<a\b[^>]*\bhref=")([^"]+)("[^>]*>)/gi
+function convertNoteContainersToGitHubAlerts(code: string) {
+  const lines = code.split('\n')
+  const normalizedLines: string[] = []
+  let inFence = false
+  let activeFenceMarker = ''
+  let changed = false
 
-  function normalizePath(p: string): string {
-    if (p.startsWith('http://') || p.startsWith('https://') || p.startsWith('data:') || p.startsWith('#')) return p
-    return p.replace(/\\/g, '/')
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index]
+    const trimmed = line.trimStart()
+    const fenceMatch = trimmed.match(fencePattern)
+
+    if (fenceMatch) {
+      const marker = fenceMatch[1]
+      if (!inFence) {
+        inFence = true
+        activeFenceMarker = marker
+      } else if (marker[0] === activeFenceMarker[0] && marker.length >= activeFenceMarker.length) {
+        inFence = false
+        activeFenceMarker = ''
+      }
+      normalizedLines.push(line)
+      continue
+    }
+
+    if (inFence || !/^\s*:::\{[Nn]ote\}\s*$/.test(line)) {
+      normalizedLines.push(line)
+      continue
+    }
+
+    const bodyLines: string[] = []
+    let closeLine = index + 1
+
+    while (closeLine < lines.length && !/^\s*:::\s*$/.test(lines[closeLine])) {
+      bodyLines.push(lines[closeLine])
+      closeLine += 1
+    }
+
+    if (closeLine >= lines.length) {
+      normalizedLines.push(line)
+      continue
+    }
+
+    normalizedLines.push('> [!NOTE]')
+    for (const bodyLine of bodyLines) {
+      normalizedLines.push(bodyLine.length > 0 ? `> ${bodyLine}` : '>')
+    }
+
+    index = closeLine
+    changed = true
   }
 
+  return changed ? normalizedLines.join('\n') : code
+}
+
+function normalizeNoteContainers() {
   return {
-    name: 'normalize-image-path-slashes',
+    name: 'normalize-note-containers',
     enforce: 'pre' as const,
     transform(code: string, id: string) {
-      if (!id.endsWith('.md')) return null
-      let changed = false
+      if (!id.endsWith('.md') || !/:::\{[Nn]ote\}/.test(code)) {
+        return null
+      }
 
-      const mdReplaced = code.replace(mdImagePattern, (match, alt, src: string) => {
-        const norm = normalizePath(src)
-        if (norm !== src) { changed = true; return `![${alt}](${norm})` }
-        return match
-      })
-
-      const htmlImgReplaced = mdReplaced.replace(htmlImagePattern, (match, pre, src: string, post) => {
-        const norm = normalizePath(src)
-        if (norm !== src) { changed = true; return `${pre}${norm}${post}` }
-        return match
-      })
-
-      const htmlLinkReplaced = htmlImgReplaced.replace(htmlLinkPattern, (match, pre, href: string, post) => {
-        const norm = normalizePath(href)
-        if (norm !== href) { changed = true; return `${pre}${norm}${post}` }
-        return match
-      })
-
-      return changed ? htmlLinkReplaced : null
+      const transformed = convertNoteContainersToGitHubAlerts(code)
+      return transformed === code ? null : transformed
     }
   }
 }
+
 
 function preserveBrokenAbsoluteImages() {
   const imageTagPattern = /<img\b[^>]*\bsrc="([A-Za-z]:\\[^"]+)"[^>]*\/?>/g
@@ -678,8 +708,8 @@ function docModuleBlockPlugin(md: any) {
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   base: docsBase,
-  title: 'MentorPi Documentation',
-  description: 'MentorPi robot documentation',
+  title: 'JetArm Documentation',
+  description: 'JetArm documentation',
   head: [['link', { rel: 'icon', href: `${docsBase}favicon.ico` }]],
   ignoreDeadLinks: true,
   transformHtml(code) {
@@ -688,40 +718,12 @@ export default defineConfig({
   vite: {
     assetsInclude: ['**/*.PNG', '**/*.JPG', '**/*.JPEG', '**/*.WEBP', '**/*.BMP', '**/*.ICO', '**/*.SVG', '**/*.MP4', '**/*.MOV', '**/*.AVI', '**/*.WAV', '**/*.MP3', '**/*.emf', '**/*.EMF', '**/*.wmf', '**/*.WMF', '**/*.GIF', '**/*.db'],
     plugins: [
-      normalizeImagePathSlashes(),
+      normalizeNoteContainers(),
       normalizeStrongWhitespace(),
       normalizeProblematicStrongEmphasis(),
       preserveBrokenAbsoluteImages(),
       reserveLocalImageDimensions(),
-      lazyLoadHtmlImages(),
-      {
-        name: 'ignore-missing-images',
-        enforce: 'pre' as const,
-        resolveId(source: string, importer: string | undefined) {
-          if (!importer) return null
-          const imageExt = /\.(png|jpe?g|gif|webp|bmp|svg|ico|mp4|mov|avi|wav|mp3|emf|wmf|db)$/i
-          if (!imageExt.test(source)) return null
-          const resolvedPath = path.resolve(path.dirname(importer), source)
-          if (fs.existsSync(resolvedPath)) return null
-          console.warn(`  [missing-image] Skipping missing image: ${source}`)
-          return {
-            id: resolvedPath,
-            external: false,
-            moduleType: 'asset'
-          }
-        },
-        load(id: string) {
-          const imageExt = /\.(png|jpe?g|gif|webp|bmp|svg|ico|mp4|mov|avi|wav|mp3|emf|wmf|db)$/i
-          if (!imageExt.test(id)) return null
-          if (fs.existsSync(id)) return null
-          const placeholderPng =
-            'data:image/svg+xml;base64,' +
-            Buffer.from(
-              '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1" viewBox="0 0 1 1"><rect width="1" height="1" fill="rgba(0,0,0,0)"/></svg>'
-            ).toString('base64')
-          return `export default "${placeholderPng}"`
-        }
-      }
+      lazyLoadHtmlImages()
     ]
   },
   markdown: {
@@ -774,7 +776,7 @@ export default defineConfig({
       }
     },
     nav: [
-      { text: 'Home', link: 'https://www.hiwonder.net/', target: '_self' }
+      { text: 'Home', link: 'https://www.hiwonder.net/', target: '_self' },
     ],
     sidebar: getSidebar()
   }
