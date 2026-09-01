@@ -1,6 +1,7 @@
 # Appendix
 
 - System Image & Source Code: If you want to get the system image and source code, please email us at support@hiwonder.com, and share your order number :)
+- Google Drive: [JetArm Resources](https://drive.google.com/drive/folders/1zMikOwlSFNPySyE5OKRzPKWgardgx9Sm?usp=sharing)
 - Remote Control PC Software: [nomachine_8.4.2_10_x64.exe & MobaXterm_Installer_v22.1.zip](https://drive.google.com/drive/folders/1mk-khOCVOA3V_WVms6hcbun8bZbg_F9F?usp=sharing)
 - Image Burning Tool: [Image Burning Tool.zip](https://drive.google.com/drive/folders/1FBb0AVXGVc_P5syNtI7DGKD3XUsOuzAW?usp=sharing)
 - Firmware Download Tool: [Firmware Download Tool](https://drive.google.com/drive/folders/1Xbj-f8x1LTQRXREob1kq4yygSBAhbLt7?usp=sharing)
